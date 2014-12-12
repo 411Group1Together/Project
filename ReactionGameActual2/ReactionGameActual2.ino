@@ -192,22 +192,30 @@ void loop(){
         buttonState1 = digitalRead(SwitchOne);
         if (buttonState1 == LOW){
           // record when player press his button
+          if(playerOneTime == 0){
           playerOneTime = millis() - beginTime;
+          }
         }
         buttonState2 = digitalRead(SwitchTwo);
         if (buttonState2 == LOW){
           // record when player press his button
+          if(playerTwoTime == 0){
           playerTwoTime = millis() - beginTime;
+          }
         }
         buttonState3 = digitalRead(SwitchThree);
         if (buttonState3 == LOW){
           // record when player press his button
+          if(playerThreeTime == 0){
           playerThreeTime = millis() - beginTime;
+          }
         }
         buttonState4 = digitalRead(SwitchFour);
         if (buttonState4 == LOW){
           // record when player press his button
+          if(playerFourTime == 0){
           playerFourTime = millis() - beginTime;
+          }
         }
         if (millis() > beginTime + 3000) {
           roundCompleted();
@@ -221,28 +229,53 @@ void loop(){
         Serial.println(playerOneTime);
         Serial.println(playerTwoTime);
         Serial.println(playerOneJoined);
-        buttonStateR = digitalRead(SwitchReset);
-        if (buttonStateR == HIGH){
-        if(playerOneJoined == true && playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime && playerOneTime <= playerFourTime){
+        //buttonStateR = digitalRead(SwitchReset);
+        //if (buttonStateR == HIGH){
+        if(playerOneJoined == true && playerTwoJoined == false && playerThreeJoined == false && playerFourJoined == false){
           winner = 1;
+        } 
+        if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == false && playerFourJoined == false){
+          if(playerOneTime <= playerTwoTime){
+           winner = 1; 
+          }
+          if(playerTwoTime < playerOneTime){
+           winner = 2; 
+          }
         }
-        if(playerTwoJoined == true && playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime && playerTwoTime <= playerFourTime){
-         winner = 2; 
+        if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == true && playerFourJoined == false){
+           if(playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime){
+           winner = 1; 
+          }
+          if(playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime){
+           winner = 2; 
+          }
+           if(playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime){
+           winner = 3; 
+          }
         }
-        if(playerThreeJoined == true && playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime && playerThreeTime <= playerFourTime){
-          winner = 3;
-        }
-        if(playerFourJoined == true && playerFourTime < playerOneTime && playerFourTime < playerTwoTime && playerFourTime < playerThreeTime){
-          winner = 4;
+        if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == true && playerFourJoined == true){
+           if(playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime && playerOneTime <= playerFourTime){
+           winner = 1; 
+          }
+          if(playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime && playerTwoTime <= playerFourTime){
+           winner = 2; 
+          }
+           if(playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime && playerThreeTime <= playerFourTime){
+           winner = 3; 
+          }
+            if(playerFourTime < playerOneTime && playerFourTime < playerTwoTime && playerFourTime < playerThreeTime){
+           winner = 3; 
+          }
         }
         gGameState = GameState_DisplayWinner;
-        }
-        else{
-         resetGame(); 
-        }
+        //}
+        //else{
+         //resetGame(); 
+        //}
         break;
         
       case GameState_DisplayWinner:
+      Serial.println(winner);
         buttonStateR = digitalRead(SwitchReset);
         if (buttonStateR == HIGH){
         // update the display with the player number
