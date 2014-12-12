@@ -150,7 +150,11 @@ void loop(){
           if (millis() > choosePlayersTime + 3000) {
             if(playerOneJoined == false && playerTwoJoined == false && playerThreeJoined == false && playerFourJoined == false){
               tft.fillScreen(ILI9340_BLACK);
-              tft.println("ERROR");
+              tft.setCursor(50,50);
+              tft.setTextColor(ILI9340_RED);
+              tft.println("  ERROR");
+              tft.println("");
+              tft.println("Reset Game");
               delay(1000);
              gGameState = GameState_Startup; 
             }    
@@ -287,30 +291,38 @@ void loop(){
           // update the display with the player number
           //wrote display for this but may need to change based on eval of player scores function
           displayWinner();
+          delay(1000);
           if(winner == 1){
             tft.fillScreen(ILI9340_BLACK);
-            tft.setCursor(120,110);
+            tft.setCursor(120,50);
             tft.setTextSize(3);
             tft.println(playerOneTime);
-            tft.println("milliseconds"); 
+            tft.println("");
+            tft.println("   milliseconds"); 
           }
           if(winner == 2){
             tft.fillScreen(ILI9340_BLACK);
-            tft.setCursor(120,110);
+            tft.setCursor(120,50);
             tft.setTextSize(3);
-            tft.println(playerTwoTime); 
+            tft.println(playerTwoTime);
+            tft.println("");
+            tft.println("   milliseconds"); 
           }
           if(winner == 3){
             tft.fillScreen(ILI9340_BLACK);
-            tft.setCursor(120,110);
+            tft.setCursor(120,50);
             tft.setTextSize(3);
-            tft.println(playerThreeTime); 
+            tft.println(playerThreeTime);
+            tft.println("");
+            tft.println("   milliseconds"); 
           }
           if(winner == 4){
             tft.fillScreen(ILI9340_BLACK);
-            tft.setCursor(120,110);
+            tft.setCursor(120,50);
             tft.setTextSize(3);
-            tft.println(playerFourTime); 
+            tft.println(playerFourTime);
+            tft.println("");
+            tft.println("   milliseconds"); 
           }
           delay(3000);
           playAgain();
@@ -335,6 +347,9 @@ void loop(){
           else{
             tft.fillScreen(ILI9340_BLACK);
             tft.setCursor(50,50);
+            tft.setRotation(3);
+            tft.setTextSize(4);
+            tft.setTextColor(ILI9340_RED);
             tft.println("Game Over");
             delay(2000);
             done = true;
