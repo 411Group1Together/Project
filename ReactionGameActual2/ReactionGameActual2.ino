@@ -54,8 +54,9 @@ GameState gGameState;
 long gameTime = 0;
 long beginTime = 0;
 long startGameTime = 0;
+long choosePlayersTime = 0;
+long playAgainTimer = 0;
 
-//Setting the game state to startup and other stuff
 void resetGame(){
 gGameState = GameState_Startup;
 gameTime = 0;
@@ -92,29 +93,31 @@ void loop(){
       
       case GameState_Startup:
         splash(ILI9340_GREEN,ILI9340_YELLOW,ILI9340_BLUE);
+        delay(2000);
         rules();
         delay(5000);
         playerOneTime = 0;
         playerTwoTime = 0;
         playerThreeTime = 0;
         playerFourTime = 0;
+        play();
         gGameState = GameState_WaitForPlayButton;
         break;
         
       case GameState_WaitForPlayButton:
         buttonStateR = digitalRead(SwitchReset);
-        if (buttonStateR == HIGH){
-        play();
-        buttonState1 = digitalRead(SwitchOne);
-        if (buttonState1 == LOW){
-           gGameState = GameState_WaitForPlayersToJoin;
+        if (buttonStateR == HIGH){   
+            buttonState1 = digitalRead(SwitchOne);
+            if (buttonState1 == LOW){
+              choosePlayersTime = millis();
+              howManyPlayers();
+              gGameState = GameState_WaitForPlayersToJoin;
+            }
+            startGameTime = millis();
+              if (millis() > startGameTime + 10000){
+              resetGame(); 
+            }
         }
-        startGameTime = millis();
-        if (millis() > startGameTime + 10000){
-         resetGame(); 
-        }
-        }
-        
         else{
           resetGame();
         }
@@ -123,38 +126,39 @@ void loop(){
       case GameState_WaitForPlayersToJoin:
         buttonStateR = digitalRead(SwitchReset);
         if (buttonStateR == HIGH){
-        idleLoops++;
-        howManyPlayers();
-        buttonState1 = digitalRead(SwitchOne);
-        if (buttonState1 == LOW){
-          playerOneJoined = true;
-        }
-        buttonState2 = digitalRead(SwitchTwo);
-        if(buttonState2 == LOW){
-          playerTwoJoined = true;
-        }
-        buttonState3 = digitalRead(SwitchThree);
-        if(buttonState3 == LOW){
-          playerThreeJoined = true;
-        }
-        buttonState4 = digitalRead(SwitchFour);
-         if (buttonState4 == LOW){
-          playerFourJoined = true;
-         }
-        if (idleLoops > 10) {
+          buttonState1 = digitalRead(SwitchOne);
+          if (buttonState1 == LOW){
+            playerOneJoined = true;
+          }
+          buttonState2 = digitalRead(SwitchTwo);
+          if(buttonState2 == LOW){
+            playerOneJoined = true;
+            playerTwoJoined = true;
+          }
+          buttonState3 = digitalRead(SwitchThree);
+          if(buttonState3 == LOW){
+            playerOneJoined = true;
+            playerTwoJoined = true;
+            playerThreeJoined = true;
+          }
+          buttonState4 = digitalRead(SwitchFour);
+          if (buttonState4 == LOW){  
+            playerOneJoined = true;
+            playerTwoJoined = true;
+            playerFourJoined = true;
+           }
+          if (millis() > choosePlayersTime + 3000) {
             if(playerOneJoined == false && playerTwoJoined == false && playerThreeJoined == false && playerFourJoined == false){
               tft.fillScreen(ILI9340_BLACK);
               tft.println("ERROR");
               delay(1000);
-              idleLoops = 0;
              gGameState = GameState_Startup; 
             }    
             else{
               // Done adding players, show how many joined on display
-              idleLoops = 0;
               gGameState = GameState_DisplayNumOfPlayers;
             }
-        }
+          }
         }
         else{
           resetGame();
@@ -164,10 +168,10 @@ void loop(){
       case GameState_DisplayNumOfPlayers:
         buttonStateR = digitalRead(SwitchReset);
         if (buttonStateR == HIGH){
-        //display number of players
-        displayNumberOfPlayers();
-        delay(2000);
-        gGameState = GameState_DisplayRandomGo;
+          //display number of players
+          displayNumberOfPlayers();
+          delay(2000);
+          gGameState = GameState_DisplayRandomGo;
         }
         else{
          resetGame(); 
@@ -189,125 +193,128 @@ void loop(){
         break;
         
       case GameState_WaitForPlayerInputOrTimeout:
-        buttonState1 = digitalRead(SwitchOne);
-        if (buttonState1 == LOW){
+        buttonStateR = digitalRead(SwitchReset);
+        if (buttonStateR == HIGH){
+          buttonState1 = digitalRead(SwitchOne);
+          if (buttonState1 == LOW){
           // record when player press his button
-          if(playerOneTime == 0){
-          playerOneTime = millis() - beginTime;
+            if(playerOneTime == 0){
+              playerOneTime = millis() - beginTime;
+            }
+          }
+          buttonState2 = digitalRead(SwitchTwo);
+          if (buttonState2 == LOW){
+          // record when player press his button
+            if(playerTwoTime == 0){
+            playerTwoTime = millis() - beginTime;
+            }
+          }
+          buttonState3 = digitalRead(SwitchThree);
+          if (buttonState3 == LOW){
+          // record when player press his button
+            if(playerThreeTime == 0){
+            playerThreeTime = millis() - beginTime;
+            }
+          }
+          buttonState4 = digitalRead(SwitchFour);
+          if (buttonState4 == LOW){
+          // record when player press his button
+            if(playerFourTime == 0){
+            playerFourTime = millis() - beginTime;
+            }
+          }
+          if (millis() > beginTime + 3000) {
+            roundCompleted();
+            delay(2000);
+            gGameState = GameState_EvaluatePlayerScores;
           }
         }
-        buttonState2 = digitalRead(SwitchTwo);
-        if (buttonState2 == LOW){
-          // record when player press his button
-          if(playerTwoTime == 0){
-          playerTwoTime = millis() - beginTime;
-          }
-        }
-        buttonState3 = digitalRead(SwitchThree);
-        if (buttonState3 == LOW){
-          // record when player press his button
-          if(playerThreeTime == 0){
-          playerThreeTime = millis() - beginTime;
-          }
-        }
-        buttonState4 = digitalRead(SwitchFour);
-        if (buttonState4 == LOW){
-          // record when player press his button
-          if(playerFourTime == 0){
-          playerFourTime = millis() - beginTime;
-          }
-        }
-        if (millis() > beginTime + 3000) {
-          roundCompleted();
-          delay(2000);
-          gGameState = GameState_EvaluatePlayerScores;
-        }
+         else{
+           resetGame();
+         }
         break;
         
       case GameState_EvaluatePlayerScores:
-        Serial.println("Eavl");
-        Serial.println(playerOneTime);
-        Serial.println(playerTwoTime);
-        Serial.println(playerOneJoined);
-        //buttonStateR = digitalRead(SwitchReset);
-        //if (buttonStateR == HIGH){
-        if(playerOneJoined == true && playerTwoJoined == false && playerThreeJoined == false && playerFourJoined == false){
-          winner = 1;
-        } 
-        if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == false && playerFourJoined == false){
-          if(playerOneTime <= playerTwoTime){
-           winner = 1; 
+        buttonStateR = digitalRead(SwitchReset);
+        if (buttonStateR == HIGH){
+          if(playerOneJoined == true && playerTwoJoined == false && playerThreeJoined == false && playerFourJoined == false){
+            winner = 1;
+          } 
+          if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == false && playerFourJoined == false){
+            if(playerOneTime != 0 && playerOneTime <= playerTwoTime){
+              winner = 1; 
+            }
+            if(playerTwoTime != 0 && playerTwoTime < playerOneTime){
+              winner = 2; 
+             }
           }
-          if(playerTwoTime < playerOneTime){
-           winner = 2; 
+          if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == true && playerFourJoined == false){
+             if(playerOneTime != 0 && playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime){
+               winner = 1; 
+             }
+            if(playerTwoTime != 0 && playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime){
+              winner = 2; 
+            }
+            if(playerThreeTime != 0 && playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime){
+              winner = 3; 
+            }
           }
-        }
-        if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == true && playerFourJoined == false){
-           if(playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime){
-           winner = 1; 
+          if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == true && playerFourJoined == true){
+            if(playerOneTime != 0 && playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime && playerOneTime <= playerFourTime){
+              winner = 1; 
+            }
+            if(playerTwoTime != 0 && playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime && playerTwoTime <= playerFourTime){
+              winner = 2; 
+            }
+            if(playerThreeTime != 0 && playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime && playerThreeTime <= playerFourTime){
+              winner = 3; 
+            }
+            if(playerFourTime != 0 && playerFourTime < playerOneTime && playerFourTime < playerTwoTime && playerFourTime < playerThreeTime){
+              winner = 4; 
+            }
           }
-          if(playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime){
-           winner = 2; 
-          }
-           if(playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime){
-           winner = 3; 
-          }
-        }
-        if(playerOneJoined == true && playerTwoJoined == true && playerThreeJoined == true && playerFourJoined == true){
-           if(playerOneTime <= playerTwoTime && playerOneTime <= playerThreeTime && playerOneTime <= playerFourTime){
-           winner = 1; 
-          }
-          if(playerTwoTime < playerOneTime && playerTwoTime <= playerThreeTime && playerTwoTime <= playerFourTime){
-           winner = 2; 
-          }
-           if(playerThreeTime < playerOneTime && playerThreeTime < playerTwoTime && playerThreeTime <= playerFourTime){
-           winner = 3; 
-          }
-            if(playerFourTime < playerOneTime && playerFourTime < playerTwoTime && playerFourTime < playerThreeTime){
-           winner = 3; 
-          }
-        }
         gGameState = GameState_DisplayWinner;
-        //}
-        //else{
-         //resetGame(); 
-        //}
+        }
+        else{
+         resetGame(); 
+        }
         break;
         
       case GameState_DisplayWinner:
       Serial.println(winner);
         buttonStateR = digitalRead(SwitchReset);
         if (buttonStateR == HIGH){
-        // update the display with the player number
-        //wrote display for this but may need to change based on eval of player scores function
-        displayWinner();
-        if(winner == 1){
-          tft.fillScreen(ILI9340_BLACK);
-          tft.setCursor(120,110);
-          tft.setTextSize(3);
-          tft.println(playerOneTime);
-          tft.println("milliseconds"); 
-        }
-         if(winner == 2){
-           tft.fillScreen(ILI9340_BLACK);
-           tft.setCursor(120,110);
-           tft.setTextSize(3);
-           tft.println(playerTwoTime); 
-        }
-         if(winner == 3){
-           tft.fillScreen(ILI9340_BLACK);
-           tft.setCursor(120,110);
-           tft.setTextSize(3);
-           tft.println(playerThreeTime); 
-        }
-         if(winner == 4){
-           tft.fillScreen(ILI9340_BLACK);
-           tft.setCursor(120,110);
-           tft.setTextSize(3);
-           tft.println(playerFourTime); 
-        }
-        delay(3000);
+          // update the display with the player number
+          //wrote display for this but may need to change based on eval of player scores function
+          displayWinner();
+          if(winner == 1){
+            tft.fillScreen(ILI9340_BLACK);
+            tft.setCursor(120,110);
+            tft.setTextSize(3);
+            tft.println(playerOneTime);
+            tft.println("milliseconds"); 
+          }
+          if(winner == 2){
+            tft.fillScreen(ILI9340_BLACK);
+            tft.setCursor(120,110);
+            tft.setTextSize(3);
+            tft.println(playerTwoTime); 
+          }
+          if(winner == 3){
+            tft.fillScreen(ILI9340_BLACK);
+            tft.setCursor(120,110);
+            tft.setTextSize(3);
+            tft.println(playerThreeTime); 
+          }
+          if(winner == 4){
+            tft.fillScreen(ILI9340_BLACK);
+            tft.setCursor(120,110);
+            tft.setTextSize(3);
+            tft.println(playerFourTime); 
+          }
+          delay(3000);
           playAgain();
+          playAgainTimer = millis();
           gGameState = GameState_WaitForPlayAgain;
         }
         else{
@@ -318,19 +325,21 @@ void loop(){
       case GameState_WaitForPlayAgain:
         buttonStateR = digitalRead(SwitchReset);
         if (buttonStateR == HIGH){
-         buttonState1 = digitalRead(SwitchOne);
-        if (buttonState1 == LOW){
-          // Restart the game, with the same number of players
-          gGameState = GameState_DisplayNumOfPlayers;
-          gameTime = 0;
-        }
-        else{
-         tft.fillScreen(ILI9340_BLACK);
-         tft.setCursor(50,50);
-         tft.println("Game Over");
-         delay(2000);
-         done = true; 
-        }
+          if(millis() > playAgainTimer + 3000){
+          buttonState1 = digitalRead(SwitchOne);
+          if (buttonState1 == LOW){
+            // Restart the game, with the same number of players
+            gGameState = GameState_DisplayNumOfPlayers;
+            gameTime = 0;
+          }
+          else{
+            tft.fillScreen(ILI9340_BLACK);
+            tft.setCursor(50,50);
+            tft.println("Game Over");
+            delay(2000);
+            done = true;
+          } 
+         }
         }
         else{
          resetGame(); 
