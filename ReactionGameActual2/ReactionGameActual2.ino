@@ -282,20 +282,29 @@ void loop(){
         //wrote display for this but may need to change based on eval of player scores function
         displayWinner();
         if(winner == 1){
+          tft.fillScreen(ILI9340_BLACK);
+          tft.setCursor(120,110);
           tft.setTextSize(3);
-         tft.println(playerOneTime + "ms"); 
+          tft.println(playerOneTime);
+          tft.println("milliseconds"); 
         }
          if(winner == 2){
+           tft.fillScreen(ILI9340_BLACK);
+           tft.setCursor(120,110);
            tft.setTextSize(3);
-         tft.println(playerTwoTime + "ms"); 
+           tft.println(playerTwoTime); 
         }
          if(winner == 3){
+           tft.fillScreen(ILI9340_BLACK);
+           tft.setCursor(120,110);
            tft.setTextSize(3);
-         tft.println(playerThreeTime + "ms"); 
+           tft.println(playerThreeTime); 
         }
          if(winner == 4){
-         tft.setTextSize(3);
-         tft.println(playerFourTime + "ms"); 
+           tft.fillScreen(ILI9340_BLACK);
+           tft.setCursor(120,110);
+           tft.setTextSize(3);
+           tft.println(playerFourTime); 
         }
         delay(3000);
           playAgain();
